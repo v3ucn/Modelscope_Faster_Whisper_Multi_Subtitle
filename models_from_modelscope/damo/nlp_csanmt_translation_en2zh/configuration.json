@@ -1,0 +1,80 @@
+{
+    "framework": "tensorflow",
+    "task": "translation",
+    "pipeline": {
+       "type": "csanmt-translation"
+    },
+    "model": {
+        "type": "csanmt-translation",
+        "hidden_size": 1024,
+        "filter_size": 4096,
+        "num_heads": 16,
+        "num_encoder_layers": 24,
+        "num_decoder_layers": 6,
+        "attention_dropout": 0,
+        "residual_dropout": 0,
+        "relu_dropout": 0,
+        "layer_preproc": "layer_norm",
+        "layer_postproc": "none",
+        "shared_embedding_and_softmax_weights": true,
+        "shared_source_target_embedding": true,
+        "initializer_scale": 0.1,
+        "position_info_type": "absolute",
+        "max_relative_dis": 16,
+        "num_semantic_encoder_layers": 4,
+        "src_vocab_size": 50000,
+        "trg_vocab_size": 50000,
+        "seed": 1234,
+        "beam_size": 4,
+        "lp_rate": 0.6,
+        "max_decoded_trg_len": 100
+    }, 
+    "dataset": {
+        "train_src": "train.en",
+        "train_trg": "train.zh",
+        "src_vocab": {
+          "file": "src_vocab.txt"
+        },
+        "trg_vocab": {
+          "file": "trg_vocab.txt"
+        }
+    },
+    "preprocessor": {
+        "src_lang": "en",
+        "tgt_lang": "zh",
+        "src_bpe": {
+          "file": "bpe.en"
+        }
+    },
+    "train": {
+        "num_gpus": 1,
+        "warmup_steps": 4000,
+        "update_cycle": 1,
+        "keep_checkpoint_max": 1,
+        "confidence": 0.9,
+        "optimizer": "adam",
+        "adam_beta1": 0.9,
+        "adam_beta2": 0.98,
+        "adam_epsilon": 1e-9,
+        "gradient_clip_norm": 0.0,
+        "learning_rate_decay": "linear_warmup_rsqrt_decay",
+        "initializer": "uniform_unit_scaling",
+        "initializer_scale": 0.1,
+        "learning_rate": 1.0,
+        "train_batch_size_words": 1024,
+        "scale_l1": 0.0,
+        "scale_l2": 0.0,
+        "train_max_len": 100,
+        "num_of_epochs": 2,
+        "save_checkpoints_steps": 1000,
+        "num_of_samples": 4,
+        "eta": 0.6
+    },
+    "evaluation": {
+        "beam_size": 4,
+        "lp_rate": 0.6,
+        "max_decoded_trg_len": 100
+    }
+  
+}
+

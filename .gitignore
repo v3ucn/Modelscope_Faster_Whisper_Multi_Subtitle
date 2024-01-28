@@ -1,0 +1,10 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.bin
+*.srt
+*.mp4
+venv/
+ckpt-0.data-00000-of-00001
+ckpt-0.meta
+
+

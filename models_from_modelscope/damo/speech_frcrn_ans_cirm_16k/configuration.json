@@ -1,0 +1,65 @@
+{
+  "framework": "pytorch",
+  "task": "acoustic-noise-suppression",
+  "framework": "pytorch",
+  "pipeline": {
+     "type": "speech_frcrn_ans_cirm_16k"
+  },
+  "model": {
+    "type": "speech_frcrn_ans_cirm_16k",
+    "complex": true,
+    "model_complexity": 45,
+    "model_depth": 14,
+    "log_amp": false,
+    "padding_mode": "zeros",
+    "win_len": 640,
+    "win_inc": 320,
+    "fft_len": 640,
+    "win_type": "hann"
+  },
+  "preprocessor": {},
+  "train": {
+      "max_epochs": 200,
+      "train_iters_per_epoch": 2000,
+      "dataloader": {
+          "batch_size_per_gpu": 12,
+          "workers_per_gpu": 0
+      },
+      "seed": 20,
+      "optimizer": {
+          "type": "Adam",
+          "lr": 0.001,
+          "weight_decay": 0.00001,
+          "options": {
+              "grad_clip": {
+                  "max_norm": 10.0
+              }
+          }
+      },
+      "lr_scheduler": {
+          "type": "ReduceLROnPlateau",
+          "mode": "min",
+          "factor": 0.98,
+          "patience": 2,
+          "verbose": true
+      },
+      "lr_scheduler_hook": {
+          "type": "PlateauLrSchedulerHook",
+          "metric_key": "avg_loss"
+      },
+      "hooks": [
+          {
+              "type": "EvaluationHook",
+              "interval": 1
+          }
+      ]
+  },
+  "evaluation": {
+        "val_iters_per_epoch": 200,
+        "dataloader": {
+            "batch_size_per_gpu": 12,
+            "workers_per_gpu": 0
+        },
+        "metrics": ["audio-noise-metric"]
+  }
+}
