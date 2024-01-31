@@ -3,6 +3,7 @@ __pycache__/
 *.bin
 *.srt
 *.mp4
+*.wav
 venv/
 ckpt-0.data-00000-of-00001
 ckpt-0.meta

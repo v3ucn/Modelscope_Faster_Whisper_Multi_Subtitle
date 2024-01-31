@@ -63,7 +63,9 @@ with gr.Blocks() as app:
     with gr.Accordion("视频(Video)"):
         with gr.Row():
 
-            ori_video = gr.Video(label="请上传视频(Upload Video)", type="filepath").style(width=512)
+            # ori_video = gr.Video(label="请上传视频(Upload Video)", type="filepath").style(width=512)
+
+            ori_video = gr.Textbox(label="填写视频的路径/Fill in the video path",placeholder="请填写视频所在路径")
         
             speech_button = gr.Button("提取人声(如果视频没有背景音也可以不做)Extract human voice (you don't have to do it if the video has no background sound)")
 
@@ -117,7 +119,9 @@ with gr.Blocks() as app:
 
         srt_button_two = gr.Button("将双语字幕合并到视频/Merge bilingual subtitles into video")
 
-        result3 = gr.Video(label="带字幕视频", type="filepath").style(width=512)
+        # result3 = gr.Video(label="带字幕视频", type="filepath").style(width=512)
+
+        result3 = gr.Textbox(label="合成结果(会在项目目录生成test_srt.mp4/test_srt.mp4 is generated in the current directory)")
 
     srt_button_sin.click(do_srt_sin,inputs=[ori_video],outputs=[result3])
     srt_button_two.click(do_srt_two,inputs=[ori_video],outputs=[result3])
