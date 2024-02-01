@@ -1,14 +1,6 @@
-from modelscope.pipelines import pipeline
+from modelscope.pipelines import pipeline as pipeline_ali
 from modelscope.utils.constant import Tasks
-
-
 from moviepy.editor import VideoFileClip
-
-
-from modelscope.pipelines import pipeline
-from modelscope.utils.constant import Tasks
-
-from modelscope.hub.snapshot_download import snapshot_download
 
 import os
 
@@ -22,12 +14,21 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM,pipeline
 
 
+
 # 指定本地目录
 local_dir_root = "./models_from_modelscope"
 
-model_dir_cirm = snapshot_download('damo/speech_frcrn_ans_cirm_16k', cache_dir=local_dir_root)
+# model_dir_cirm = snapshot_download('damo/speech_frcrn_ans_cirm_16k', cache_dir=local_dir_root)
 
-model_dir_ins = snapshot_download('damo/nlp_csanmt_translation_en2zh', cache_dir=local_dir_root)
+# model_dir_ins = snapshot_download('damo/nlp_csanmt_translation_en2zh', cache_dir=local_dir_root)
+
+
+model_dir_cirm = './models_from_modelscope/damo/speech_frcrn_ans_cirm_16k'
+
+model_dir_ins = './models_from_modelscope/damo/nlp_csanmt_translation_en2zh'
+
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 
@@ -42,9 +43,52 @@ def merge_sub(video_path,srt_path):
     return "./test_srt.mp4"
 
 
+def make_tran_ja2zh_neverLife():
+
+    model_path = "neverLife/nllb-200-distilled-600M-ja-zh"
+
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,cache_dir="./model_from_hg/")
+    tokenizer = AutoTokenizer.from_pretrained(model_path, src_lang="jpn_Jpan", tgt_lang="zho_Hans",cache_dir="./model_from_hg/")
+
+    # pipe = pipeline(model="larryvrh/mt5-translation-ja_zh")
+
+    with open("./video.srt", 'r',encoding="utf-8") as file:
+        gweight_data = file.read()
+
+    result = gweight_data.split("\n\n")
+
+    if os.path.exists("./two.srt"):
+        os.remove("./two.srt")
+
+    for res in result:
+
+        line_srt = res.split("\n")
+        
+        try:
+            # translated_text = pipe(f'<-ja2zh-> {line_srt[2]}')[0]['translation_text']
+            # print(translated_text)
+            input_ids = tokenizer.encode(line_srt[2], max_length=128, padding=True, return_tensors='pt')
+            outputs = model.generate(input_ids, num_beams=4, max_new_tokens=128)
+            translated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            print(translated_text)
+
+        except IndexError as e:
+            # 处理下标越界异常
+            print(f"翻译完毕")
+            break
+        except Exception as e:
+             print(str(e))
+             
+        
+        with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
+
+    return "翻译完毕"
+
+
+
 def make_tran_ja2zh():
 
-    pipe = pipeline(model="larryvrh/mt5-translation-ja_zh")
+    pipe = pipeline(model="larryvrh/mt5-translation-ja_zh",device=device)
 
     with open("./video.srt", 'r',encoding="utf-8") as file:
         gweight_data = file.read()
@@ -78,9 +122,9 @@ def make_tran_ja2zh():
 
 def make_tran_zh2en():
 
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-zh-en")
+    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-zh-en",cache_dir="./model_from_hg/")
 
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-zh-en")
+    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-zh-en",cache_dir="./model_from_hg/")
 
     with open("./video.srt", 'r',encoding="utf-8") as file:
         gweight_data = file.read()
@@ -113,10 +157,13 @@ def make_tran_zh2en():
 
     return "翻译完毕"
 
-# 翻译字幕
+
+# 翻译字幕 英译中
 def make_tran():
 
-    pipeline_ins = pipeline(task=Tasks.translation, model=model_dir_ins)
+    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-zh",cache_dir="./model_from_hg/")
+
+    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-zh",cache_dir="./model_from_hg/")
 
     with open("./video.srt", 'r',encoding="utf-8") as file:
         gweight_data = file.read()
@@ -130,8 +177,13 @@ def make_tran():
 
         line_srt = res.split("\n")
         try:
-            outputs = pipeline_ins(input=line_srt[2])
-            print(outputs['translation'])
+
+            tokenized_text = tokenizer.prepare_seq2seq_batch([line_srt[2]], return_tensors='pt')
+            translation = model.generate(**tokenized_text)
+            translated_text = tokenizer.batch_decode(translation, skip_special_tokens=False)[0]
+            translated_text = translated_text.replace("<pad>","").replace("</s>","").strip()
+            print(translated_text)
+
         except IndexError as e:
             # 处理下标越界异常
             print(f"翻译完毕")
@@ -139,12 +191,41 @@ def make_tran():
         except Exception as e:
              print(str(e))
              
-          
         
-        
-        with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{outputs['translation']}\n\n")
+        with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
     return "翻译完毕"
+
+# # 翻译字幕
+# def make_tran_ali():
+
+#     pipeline_ins = pipeline(task=Tasks.translation, model=model_dir_ins)
+
+#     with open("./video.srt", 'r',encoding="utf-8") as file:
+#         gweight_data = file.read()
+
+#     result = gweight_data.split("\n\n")
+
+#     if os.path.exists("./two.srt"):
+#         os.remove("./two.srt")
+
+#     for res in result:
+
+#         line_srt = res.split("\n")
+#         try:
+#             outputs = pipeline_ins(input=line_srt[2])
+#             print(outputs['translation'])
+#         except IndexError as e:
+#             # 处理下标越界异常
+#             print(f"翻译完毕")
+#             break
+#         except Exception as e:
+#              print(str(e))
+             
+        
+#         with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{outputs['translation']}\n\n")
+
+#     return "翻译完毕"
 
 
 
@@ -158,8 +239,6 @@ def convert_seconds_to_hms(seconds):
 # 制作字幕文件
 def make_srt(file_path,model_name="small"):
 
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     
     # if device == "cuda":
     #     model = WhisperModel(model_name, device="cuda", compute_type="float16",download_root="./model_from_whisper",local_files_only=False)
@@ -205,11 +284,20 @@ def movie2audio(video_path):
     # 将声音保存为WAV格式
     audio.write_audiofile("./audio.wav")
 
-    ans = pipeline(
+    ans = pipeline_ali(
         Tasks.acoustic_noise_suppression,
         model=model_dir_cirm)
     
     ans('./audio.wav',output_path='./output.wav')
 
     return "./output.wav"
+
+
+
+
+
+
+
+
+
 
