@@ -47,8 +47,8 @@ def make_tran_ja2zh_neverLife():
 
     model_path = "neverLife/nllb-200-distilled-600M-ja-zh"
 
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,cache_dir="./model_from_hg/", from_pt=True)
-    tokenizer = AutoTokenizer.from_pretrained(model_path, src_lang="jpn_Jpan", tgt_lang="zho_Hans",cache_dir="./model_from_hg/", from_pt=True)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path, from_pt=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, src_lang="jpn_Jpan", tgt_lang="zho_Hans", from_pt=True)
 
     # pipe = pipeline(model="larryvrh/mt5-translation-ja_zh")
 
@@ -122,9 +122,9 @@ def make_tran_ja2zh():
 
 def make_tran_zh2en():
 
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-zh-en",cache_dir="./model_from_hg/")
+    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-zh-en")
 
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-zh-en",cache_dir="./model_from_hg/")
+    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-zh-en")
 
     with open("./video.srt", 'r',encoding="utf-8") as file:
         gweight_data = file.read()
@@ -161,9 +161,9 @@ def make_tran_zh2en():
 # 翻译字幕 英译中
 def make_tran():
 
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-zh",cache_dir="./model_from_hg/")
+    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-zh")
 
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-zh",cache_dir="./model_from_hg/")
+    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-zh")
 
     with open("./video.srt", 'r',encoding="utf-8") as file:
         gweight_data = file.read()
