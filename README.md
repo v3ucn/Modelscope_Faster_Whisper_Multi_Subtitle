@@ -79,6 +79,9 @@ choco install ffmpeg
 python3 app.py
 ```
 
+
+## 目前支持双语字幕类型：中英、英中、日中
+
 ![avatar](./img/sample.png)
 
 ## Credits
