@@ -79,7 +79,7 @@ with gr.Blocks() as app:
 
             # model_type = gr.Dropdown(choices=["small","medium","large-v3","large-v2"], value="small", label="选择faster_Whisper模型/Select faster_Whisper model",interactive=True)
 
-            model_type = gr.Textbox(label="填写faster_Whisper模型/Fill in the faster_Whisper model",value="small")
+            model_type = gr.Textbox(label="填写faster_Whisper模型/Fill in the faster_Whisper model,也可以填写small,medium,large,large-v2,large-v3,模型越大，速度越慢，但字幕的准确度越高，酌情填写，用文本框是因为你可以填写其他huggingface上的开源模型地址",value="medium")
 
             
         transcribe_button_whisper = gr.Button("视频直接转写字幕(Video direct rewriting subtitles)")

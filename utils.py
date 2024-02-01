@@ -47,8 +47,8 @@ def make_tran_ja2zh_neverLife():
 
     model_path = "neverLife/nllb-200-distilled-600M-ja-zh"
 
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,cache_dir="./model_from_hg/")
-    tokenizer = AutoTokenizer.from_pretrained(model_path, src_lang="jpn_Jpan", tgt_lang="zho_Hans",cache_dir="./model_from_hg/")
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,cache_dir="./model_from_hg/", from_pt=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, src_lang="jpn_Jpan", tgt_lang="zho_Hans",cache_dir="./model_from_hg/", from_pt=True)
 
     # pipe = pipeline(model="larryvrh/mt5-translation-ja_zh")
 
