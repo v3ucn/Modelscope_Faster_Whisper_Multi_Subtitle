@@ -3,7 +3,7 @@ import os
 
 import gradio as gr
 
-from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_tran_ja2zh
+from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_tran_ja2zh,make_tran_ko2zh
 
 
 
@@ -35,17 +35,21 @@ def do_trans_audio(model_type):
 
     return srt_text
 
-def do_trans_en2zh():
+def do_trans_en2zh(srt_path):
 
-    return make_tran()
+    return make_tran(srt_path)
 
-def do_trans_zh2en():
+def do_trans_zh2en(srt_path):
 
-    return make_tran_zh2en()
+    return make_tran_zh2en(srt_path)
 
-def do_trans_ja2zh():
+def do_trans_ja2zh(srt_path):
 
-    return make_tran_ja2zh()
+    return make_tran_ja2zh(srt_path)
+
+def do_trans_ko2zh(srt_path):
+
+    return make_tran_ko2zh(srt_path)
 
 def do_srt_sin(video_path):
 
@@ -60,12 +64,10 @@ def do_srt_two(video_path):
 with gr.Blocks() as app:
     gr.Markdown(initial_md)
 
-    with gr.Accordion("视频(Video)"):
+    with gr.Accordion("视频处理(Video)"):
         with gr.Row():
 
-            # ori_video = gr.Video(label="请上传视频(Upload Video)", type="filepath").style(width=512)
-
-            ori_video = gr.Textbox(label="填写视频的路径/Fill in the video path",placeholder="请填写视频所在路径")
+            ori_video = gr.Textbox(label="请输入视频的路径地址，如:d:/123.mp4")
         
             speech_button = gr.Button("提取人声(如果视频没有背景音也可以不做)Extract human voice (you don't have to do it if the video has no background sound)")
 
@@ -74,54 +76,60 @@ with gr.Blocks() as app:
     
     speech_button.click(do_speech,inputs=[ori_video],outputs=[speech_audio])
     
+    with gr.Accordion("转写字幕"):
+        with gr.Row():
+            with gr.Column():
+                
 
-    with gr.Row():
-        with gr.Column():
-            
+                # model_type = gr.Dropdown(choices=["small","medium","large-v3","large-v2"], value="small", label="选择faster_Whisper模型/Select faster_Whisper model",interactive=True)
 
-            # model_type = gr.Dropdown(choices=["small","medium","large-v3","large-v2"], value="small", label="选择faster_Whisper模型/Select faster_Whisper model",interactive=True)
+                model_type = gr.Textbox(label="填写faster_Whisper模型/Fill in the faster_Whisper model,也可以填写small,medium,large,large-v2,large-v3,模型越大，速度越慢，但字幕的准确度越高，酌情填写，用文本框是因为你可以填写其他huggingface上的开源模型地址",value="medium")
 
-            model_type = gr.Textbox(label="填写faster_Whisper模型/Fill in the faster_Whisper model,也可以填写small,medium,large,large-v2,large-v3,模型越大，速度越慢，但字幕的准确度越高，酌情填写，用文本框是因为你可以填写其他huggingface上的开源模型地址",value="medium")
+                
+            transcribe_button_whisper = gr.Button("视频直接转写字幕(Video direct rewriting subtitles)")
 
-            
-        transcribe_button_whisper = gr.Button("视频直接转写字幕(Video direct rewriting subtitles)")
+            transcribe_button_audio = gr.Button("提取人声转写字幕(Extract voice transliteration subtitles)")
 
-        transcribe_button_audio = gr.Button("提取人声转写字幕(Extract voice transliteration subtitles)")
+            result1 = gr.Textbox(label="字幕結果(会在项目目录生成video.srt/video.srt is generated in the current directory)")
 
-        result1 = gr.Textbox(label="字幕結果(会在项目目录生成video.srt/video.srt is generated in the current directory)")
+        transcribe_button_whisper.click(do_trans_video,inputs=[model_type,ori_video],outputs=[result1])
 
-    transcribe_button_whisper.click(do_trans_video,inputs=[model_type,ori_video],outputs=[result1])
-
-    transcribe_button_audio.click(do_trans_audio,inputs=[model_type],outputs=[result1])
-
-
-    with gr.Row():
+        transcribe_button_audio.click(do_trans_audio,inputs=[model_type],outputs=[result1])
 
 
-        trans_button_en2zh = gr.Button("翻译英语字幕为中文/Translate English subtitles into Chinese")
-
-        trans_button_zh2en = gr.Button("翻译中文字幕为英文/Translate Chinese subtitles into English")
-
-        trans_button_ja2zh = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
-
-        result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)")
-
-    trans_button_en2zh.click(do_trans_en2zh,outputs=[result2])
-
-    trans_button_zh2en.click(do_trans_zh2en,outputs=[result2])
-
-    trans_button_ja2zh.click(do_trans_ja2zh,outputs=[result2])
-
-    with gr.Row():
+    with gr.Accordion("字幕翻译"):
+        with gr.Row():
 
 
-        srt_button_sin = gr.Button("将单语字幕合并到视频/Merge monolingual subtitles into video")
+            srt_path = gr.Textbox(label="原始字幕地址，默认为项目目录中的video.srt,也可以输入其他路径",value="./video.srt")
 
-        srt_button_two = gr.Button("将双语字幕合并到视频/Merge bilingual subtitles into video")
+            trans_button_en2zh = gr.Button("翻译英语字幕为中文/Translate English subtitles into Chinese")
 
-        # result3 = gr.Video(label="带字幕视频", type="filepath").style(width=512)
+            trans_button_zh2en = gr.Button("翻译中文字幕为英文/Translate Chinese subtitles into English")
 
-        result3 = gr.Textbox(label="合成结果(会在项目目录生成test_srt.mp4/test_srt.mp4 is generated in the current directory)")
+            trans_button_ja2zh = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
+
+            trans_button_ko2zh = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
+
+            result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)")
+
+        trans_button_en2zh.click(do_trans_en2zh,[srt_path],outputs=[result2])
+
+        trans_button_zh2en.click(do_trans_zh2en,[srt_path],outputs=[result2])
+
+        trans_button_ja2zh.click(do_trans_ja2zh,[srt_path],outputs=[result2])
+
+        trans_button_ko2zh.click(do_trans_ko2zh,[srt_path],outputs=[result2])
+
+    with gr.Accordion("字幕合并"):
+        with gr.Row():
+
+
+            srt_button_sin = gr.Button("将单语字幕合并到视频/Merge monolingual subtitles into video")
+
+            srt_button_two = gr.Button("将双语字幕合并到视频/Merge bilingual subtitles into video")
+
+            result3 = gr.Textbox(label="合成字幕后的视频路径地址")
 
     srt_button_sin.click(do_srt_sin,inputs=[ori_video],outputs=[result3])
     srt_button_two.click(do_srt_two,inputs=[ori_video],outputs=[result3])

@@ -43,7 +43,7 @@ def merge_sub(video_path,srt_path):
     return "./test_srt.mp4"
 
 
-def make_tran_ja2zh_neverLife():
+def make_tran_ja2zh_neverLife(srt_path):
 
     model_path = "neverLife/nllb-200-distilled-600M-ja-zh"
 
@@ -52,7 +52,7 @@ def make_tran_ja2zh_neverLife():
 
     # pipe = pipeline(model="larryvrh/mt5-translation-ja_zh")
 
-    with open("./video.srt", 'r',encoding="utf-8") as file:
+    with open(srt_path, 'r',encoding="utf-8") as file:
         gweight_data = file.read()
 
     result = gweight_data.split("\n\n")
@@ -82,15 +82,23 @@ def make_tran_ja2zh_neverLife():
         
         with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
-    return "翻译完毕"
+    with open("./two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+    
+    return content
 
 
 
-def make_tran_ja2zh():
+def make_tran_ko2zh(srt_path):
 
-    pipe = pipeline(model="larryvrh/mt5-translation-ja_zh",device=device)
+    # pipe = pipeline(model="yesj1234/mbart_cycle1_ko-zh",device=device,from_pt=True)
 
-    with open("./video.srt", 'r',encoding="utf-8") as file:
+    model_path = "./model_from_hg/ko-zh/"
+
+    tokenizer = AutoTokenizer.from_pretrained(model_path,local_files_only=True)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,local_files_only=True)
+
+    with open(srt_path, 'r',encoding="utf-8") as file:
         gweight_data = file.read()
 
     result = gweight_data.split("\n\n")
@@ -104,7 +112,12 @@ def make_tran_ja2zh():
         
         try:
 
-            translated_text = pipe(f'<-ja2zh-> {line_srt[2]}')[0]['translation_text']
+            # translated_text = pipe(f'<-ja2zh-> {line_srt[2]}')[0]['translation_text']
+            # print(translated_text)
+
+            input_ids = tokenizer.encode(line_srt[2], max_length=128, padding=True, return_tensors='pt')
+            outputs = model.generate(input_ids, num_beams=4, max_new_tokens=128)
+            translated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
             print(translated_text)
 
         except IndexError as e:
@@ -117,16 +130,70 @@ def make_tran_ja2zh():
         
         with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
-    return "翻译完毕"
+    with open("./two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+    
+    return content
+
+def make_tran_ja2zh(srt_path):
+
+    # pipe = pipeline(model="larryvrh/mt5-translation-ja_zh",device=device)
 
 
-def make_tran_zh2en():
+    model_path = "./model_from_hg/ja-zh/"
 
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-zh-en")
+    tokenizer = AutoTokenizer.from_pretrained(model_path,local_files_only=True)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,local_files_only=True)
 
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-zh-en")
+    with open(srt_path, 'r',encoding="utf-8") as file:
+        gweight_data = file.read()
 
-    with open("./video.srt", 'r',encoding="utf-8") as file:
+    result = gweight_data.split("\n\n")
+
+    if os.path.exists("./two.srt"):
+        os.remove("./two.srt")
+
+    for res in result:
+
+        line_srt = res.split("\n")
+        
+        try:
+
+            # translated_text = pipe(f'<-ja2zh-> {line_srt[2]}')[0]['translation_text']
+            # print(translated_text)
+
+            input_ids = tokenizer.encode(f'<-ja2zh-> {line_srt[2]}', max_length=128, padding=True, return_tensors='pt')
+            outputs = model.generate(input_ids, num_beams=4, max_new_tokens=128)
+            translated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            print(translated_text)
+
+
+
+        except IndexError as e:
+            # 处理下标越界异常
+            print(f"翻译完毕")
+            break
+        except Exception as e:
+             print(str(e))
+             
+        
+        with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
+
+    with open("./two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+    
+    return content
+
+
+def make_tran_zh2en(srt_path):
+
+    model_path = "./model_from_hg/zh-en/" 
+
+    tokenizer = AutoTokenizer.from_pretrained(model_path,local_files_only=True)
+
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,local_files_only=True)
+
+    with open(srt_path, 'r',encoding="utf-8") as file:
         gweight_data = file.read()
 
     result = gweight_data.split("\n\n")
@@ -155,17 +222,23 @@ def make_tran_zh2en():
         
         with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
-    return "翻译完毕"
+    with open("./two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+    
+    return content
 
 
 # 翻译字幕 英译中
-def make_tran():
+def make_tran(srt_path):
 
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-zh")
 
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-zh")
+    model_path = "./model_from_hg/en-zh/"
 
-    with open("./video.srt", 'r',encoding="utf-8") as file:
+    tokenizer = AutoTokenizer.from_pretrained(model_path,local_files_only=True)
+
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path,local_files_only=True)
+
+    with open(srt_path, 'r',encoding="utf-8") as file:
         gweight_data = file.read()
 
     result = gweight_data.split("\n\n")
@@ -194,7 +267,10 @@ def make_tran():
         
         with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
-    return "翻译完毕"
+    with open("./two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+
+    return content
 
 # # 翻译字幕
 # def make_tran_ali():
@@ -268,7 +344,10 @@ def make_srt(file_path,model_name="small"):
             f.write(f"{count}\n{duration}{text}")  # Write formatted string to the file
             print(f"{duration}{text}",end='')
 
-    return "转写完毕"
+    with open("./video.srt","r",encoding="utf-8") as f:
+        content = f.read()
+
+    return content
 
 
 
