@@ -19,7 +19,6 @@
 ```bash
 conda create -n venv python=3.9
 conda activate venv
-bash install.sh
 ```
 ### Install Manually
 #### Make sure you have the distutils for python3 installed
