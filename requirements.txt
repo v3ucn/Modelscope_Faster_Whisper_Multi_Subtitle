@@ -1,6 +1,6 @@
 faster-whisper==0.10.0
 ffmpeg-python==0.2.0
-gradio==3.50.2
+gradio
 modelscope==1.10.0
 moviepy==1.0.3
 transformers==4.36.2
@@ -10,3 +10,4 @@ tensorflow
 sacremoses
 subword_nmt
 jieba
+funasr>=1.1.1
