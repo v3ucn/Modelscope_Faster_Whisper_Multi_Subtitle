@@ -11,3 +11,4 @@ sacremoses
 subword_nmt
 jieba
 funasr>=1.1.1
+ollama

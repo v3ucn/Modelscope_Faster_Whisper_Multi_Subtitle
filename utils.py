@@ -38,7 +38,7 @@ model_dir_ins = './models_from_modelscope/damo/nlp_csanmt_translation_en2zh'
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-
+import ollama
 
 # 合并字幕
 def merge_sub(video_path,srt_path):
@@ -263,6 +263,60 @@ def make_tran(srt_path):
             translation = model.generate(**tokenized_text)
             translated_text = tokenizer.batch_decode(translation, skip_special_tokens=False)[0]
             translated_text = translated_text.replace("<pad>","").replace("</s>","").strip()
+            print(translated_text)
+
+        except IndexError as e:
+            # 处理下标越界异常
+            print(f"翻译完毕")
+            break
+        except Exception as e:
+             print(str(e))
+             
+        
+        with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
+
+    with open("./two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+
+    return content
+
+
+
+# 翻译字幕 英译中 qwen2
+def make_tran_qwen2(srt_path,lang):
+
+    with open(srt_path, 'r',encoding="utf-8") as file:
+        gweight_data = file.read()
+
+    result = gweight_data.split("\n\n")
+
+    if os.path.exists("./two.srt"):
+        os.remove("./two.srt")
+
+    for res in result:
+
+        line_srt = res.split("\n")
+        try:
+
+            if lang == "zh":
+                lang = "中文"
+            elif lang == "en":
+                lang = "英文"
+            elif lang == "ja":
+                lang = "日文"
+            elif lang == "ko":
+                lang = "韩文"
+
+            text = line_srt[2]
+
+            content = f'"{text}" 翻译为{lang}，只给我文本的翻译，别添加其他的内容，因为我要做字幕，谢谢'
+
+            response = ollama.chat(model='qwen2:7b',messages=[
+            {
+            'role':'user',
+            'content':content
+            }])
+            translated_text = response['message']['content']
             print(translated_text)
 
         except IndexError as e:
