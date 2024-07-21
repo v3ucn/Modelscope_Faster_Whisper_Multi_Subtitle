@@ -210,4 +210,5 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-app.launch(inbrowser=not args.no_autolaunch, server_name=args.server_name)
+app.queue()
+app.launch(inbrowser=True, server_name=args.server_name)

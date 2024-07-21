@@ -72,6 +72,17 @@ or
 choco install ffmpeg
 ```
 
+
+## 基于 Ollama 的对话式大模型翻译
+
+```
+ollama run qwen2:7b
+```
+
+```
+ollama serve
+```
+
 ## how to use
 
 ```
@@ -79,7 +90,7 @@ python3 app.py
 ```
 
 
-## 目前支持双语字幕类型：中英、英中、日中
+## 目前支持双语字幕类型：中英、英中、日中、韩中
 
 ![avatar](./img/sample.png)
 
