@@ -1,5 +1,5 @@
-faster-whisper==0.10.0
-ffmpeg-python==0.2.0
+faster-whisper
+ffmpeg-python
 gradio
 modelscope==1.10.0
 moviepy==1.0.3

@@ -43,12 +43,12 @@ import ollama
 # 合并字幕
 def merge_sub(video_path,srt_path):
 
-    if os.path.exists("./test_srt.mp4"):
-        os.remove("./test_srt.mp4")
+    if os.path.exists("test_srt.mp4"):
+        os.remove("test_srt.mp4")
 
-    ffmpeg.input(video_path).output("./test_srt.mp4", vf="subtitles=" + srt_path).run()
+    ffmpeg.input(video_path).output("test_srt.mp4", vf="subtitles=" + srt_path).run()
 
-    return "./test_srt.mp4"
+    return "test_srt.mp4"
 
 
 def make_tran_ja2zh_neverLife(srt_path):
@@ -283,15 +283,15 @@ def make_tran(srt_path):
 
 
 # 翻译字幕 英译中 qwen2
-def make_tran_qwen2(srt_path,lang):
+def make_tran_qwen2(model_name,srt_path,lang):
 
     with open(srt_path, 'r',encoding="utf-8") as file:
         gweight_data = file.read()
 
     result = gweight_data.split("\n\n")
 
-    if os.path.exists("./two.srt"):
-        os.remove("./two.srt")
+    if os.path.exists("output/two.srt"):
+        os.remove("output/two.srt")
 
     for res in result:
 
@@ -311,7 +311,7 @@ def make_tran_qwen2(srt_path,lang):
 
             content = f'"{text}" 翻译为{lang}，只给我文本的翻译，别添加其他的内容，因为我要做字幕，谢谢'
 
-            response = ollama.chat(model='qwen2:7b',messages=[
+            response = ollama.chat(model=model_name,messages=[
             {
             'role':'user',
             'content':content
@@ -327,9 +327,9 @@ def make_tran_qwen2(srt_path,lang):
              print(str(e))
              
         
-        with open("./two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
+        with open("output/two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
-    with open("./two.srt","r",encoding="utf-8") as f:
+    with open("output/two.srt","r",encoding="utf-8") as f:
         content = f.read()
 
     return content
@@ -650,20 +650,35 @@ def make_srt(file_path,model_name="small"):
     #     model = WhisperModel(model_name, device="cpu", compute_type="int8",download_root="./model_from_whisper",local_files_only=False)
     # or run on GPU with INT8
     # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
+
+
+    if model_name != "faster-whisper-large-v3-turbo-ct2":
         
-    if device == "cuda":
-        try:
-            model = WhisperModel(model_name, device="cuda", compute_type="float16",download_root="./model_from_whisper",local_files_only=False)
-        except Exception as e:
-            model = WhisperModel(model_name, device="cuda", compute_type="int8_float16",download_root="./model_from_whisper",local_files_only=False)
+        if device == "cuda":
+            try:
+                model = WhisperModel(model_name, device="cuda", compute_type="float16",download_root="./model_from_whisper",local_files_only=False)
+            except Exception as e:
+                model = WhisperModel(model_name, device="cuda", compute_type="int8_float16",download_root="./model_from_whisper",local_files_only=False)
+        else:
+            model = WhisperModel(model_name, device="cpu", compute_type="int8",download_root="./model_from_whisper",local_files_only=False)
     else:
-        model = WhisperModel(model_name, device="cpu", compute_type="int8",download_root="./model_from_whisper",local_files_only=False)
+        
+        if device == "cuda":
+            try:
+                model = WhisperModel(model_name, device="cuda", compute_type="float16")
+            except Exception as e:
+                model = WhisperModel(model_name, device="cuda", compute_type="int8_float16")
+        else:
+            model = WhisperModel(model_name, device="cpu", compute_type="int8")
+
+
+        
 
     segments, info = model.transcribe(file_path, beam_size=5,vad_filter=True,vad_parameters=dict(min_silence_duration_ms=500))
 
     print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
     count = 0
-    with open('./video.srt', 'w',encoding="utf-8") as f:  # Open file for writing
+    with open('output/video.srt', 'w',encoding="utf-8") as f:  # Open file for writing
         for segment in segments:
             count +=1
             duration = f"{convert_seconds_to_hms(segment.start)} --> {convert_seconds_to_hms(segment.end)}\n"
@@ -672,7 +687,7 @@ def make_srt(file_path,model_name="small"):
             f.write(f"{count}\n{duration}{text}")  # Write formatted string to the file
             print(f"{duration}{text}",end='')
 
-    with open("./video.srt","r",encoding="utf-8") as f:
+    with open("output/video.srt","r",encoding="utf-8") as f:
         content = f.read()
 
     return content
@@ -689,15 +704,15 @@ def movie2audio(video_path):
     audio = video.audio
 
     # 将声音保存为WAV格式
-    audio.write_audiofile("./audio.wav")
+    audio.write_audiofile("audio.wav")
 
     ans = pipeline_ali(
         Tasks.acoustic_noise_suppression,
         model=model_dir_cirm)
     
-    ans('./audio.wav',output_path='./output.wav')
+    ans('audio.wav',output_path='output.wav')
 
-    return "./output.wav"
+    return "output.wav"
 
 
 

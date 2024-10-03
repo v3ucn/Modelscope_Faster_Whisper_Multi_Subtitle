@@ -10,6 +10,7 @@ from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_
 
 initial_md = """
 
+项目地址:https://github.com/v3ucn/Modelscope_Faster_Whisper_Multi_Subtitle
 
 作者：刘悦的技术博客  https://space.bilibili.com/3031494
 
@@ -37,7 +38,7 @@ def do_trans_video_sv(video_path):
 
 def do_trans_audio(model_type):
 
-    srt_text = make_srt('./audio.wav',model_type)
+    srt_text = make_srt('audio.wav',model_type)
 
     return srt_text
 
@@ -45,21 +46,21 @@ def do_trans_en2zh(srt_path):
 
     return make_tran(srt_path)
 
-def do_trans_en2zh_qwen2(srt_path):
+def do_trans_en2zh_qwen2(model_path_qwen2,srt_path):
 
-    return make_tran_qwen2(srt_path,"zh")
+    return make_tran_qwen2(model_path_qwen2,srt_path,"zh")
 
-def do_trans_zh2en_qwen2(srt_path):
+def do_trans_zh2en_qwen2(model_path_qwen2,srt_path):
 
-    return make_tran_qwen2(srt_path,"en")
+    return make_tran_qwen2(model_path_qwen2,srt_path,"en")
 
-def do_trans_ja2zh_qwen2(srt_path):
+def do_trans_ja2zh_qwen2(model_path_qwen2,srt_path):
 
-    return make_tran_qwen2(srt_path,"zh")
+    return make_tran_qwen2(model_path_qwen2,srt_path,"zh")
 
-def do_trans_ko2zh_qwen2(srt_path):
+def do_trans_ko2zh_qwen2(model_path_qwen2,srt_path):
 
-    return make_tran_qwen2(srt_path,"zh")
+    return make_tran_qwen2(model_path_qwen2,srt_path,"zh")
 
 def do_trans_zh2en(srt_path):
 
@@ -75,11 +76,29 @@ def do_trans_ko2zh(srt_path):
 
 def do_srt_sin(video_path):
 
-    return merge_sub(video_path,"./video.srt")
+    return merge_sub(video_path,"output/video.srt")
 
 def do_srt_two(video_path):
 
-    return merge_sub(video_path,"./two.srt")
+    return merge_sub(video_path,"output/two.srt")
+
+
+def save_srt(text):
+
+    with open(r'output/video.srt','w',encoding='utf-8') as f:
+        f.write(text + "\n")
+
+    gr.Info('字幕文件修改成功,字幕保存在output目录')
+
+
+def save_two(text):
+
+    with open(r'output/two.srt','w',encoding='utf-8') as f:
+        f.write(text + "\n")
+
+    gr.Info('字幕文件修改成功,字幕保存在output目录')
+    
+    
 
 
 
@@ -105,7 +124,7 @@ with gr.Blocks() as app:
                 
                 # model_type = gr.Dropdown(choices=["small","medium","large-v3","large-v2"], value="small", label="选择faster_Whisper模型/Select faster_Whisper model",interactive=True)
 
-                model_type = gr.Textbox(label="填写faster_Whisper模型/Fill in the faster_Whisper model,也可以填写small,medium,large,large-v2,large-v3,模型越大，速度越慢，但字幕的准确度越高，酌情填写，用文本框是因为你可以填写其他huggingface上的开源模型地址",value="medium")
+                model_type = gr.Textbox(label="填写faster_Whisper模型/Fill in the faster_Whisper model,也可以填写small,medium,large,large-v2,large-v3,faster-whisper-large-v3-turbo-ct2,模型越大，速度越慢，但字幕的准确度越高，酌情填写，用文本框是因为你可以填写其他huggingface上的开源模型地址",value="faster-whisper-large-v3-turbo-ct2")
 
         # with gr.Row():
         #     with gr.Column():
@@ -122,44 +141,50 @@ with gr.Blocks() as app:
 
             # transcribe_button_video_sv = gr.Button("阿里SenseVoice视频直接转写字幕")
 
-            result1 = gr.Textbox(label="字幕結果(会在项目目录生成video.srt/video.srt is generated in the current directory)")
+            result1 = gr.Textbox(label="字幕結果(会在项目目录生成video.srt/video.srt is generated in the current directory)",value=" ",interactive=True)
+
+            transcribe_button_audio_save = gr.Button("保存字幕修改结果")
 
         transcribe_button_whisper.click(do_trans_video,inputs=[model_type,ori_video],outputs=[result1])
+
+        transcribe_button_audio_save.click(save_srt,inputs=[result1],outputs=[])
 
         # transcribe_button_video_sv.click(do_trans_video_sv,inputs=[ori_video],outputs=[result1])
 
         transcribe_button_audio.click(do_trans_audio,inputs=[model_type],outputs=[result1])
 
 
-    with gr.Accordion("HuggingFace大模型字幕翻译"):
-        with gr.Row():
+    # with gr.Accordion("HuggingFace大模型字幕翻译"):
+    #     with gr.Row():
 
 
-            srt_path = gr.Textbox(label="原始字幕地址，默认为项目目录中的video.srt,也可以输入其他路径",value="./video.srt")
+    #         srt_path = gr.Textbox(label="原始字幕地址，默认为项目目录中的video.srt,也可以输入其他路径",value="./video.srt")
 
-            trans_button_en2zh = gr.Button("翻译英语字幕为中文/Translate English subtitles into Chinese")
+    #         trans_button_en2zh = gr.Button("翻译英语字幕为中文/Translate English subtitles into Chinese")
 
-            trans_button_zh2en = gr.Button("翻译中文字幕为英文/Translate Chinese subtitles into English")
+    #         trans_button_zh2en = gr.Button("翻译中文字幕为英文/Translate Chinese subtitles into English")
 
-            trans_button_ja2zh = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
+    #         trans_button_ja2zh = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
 
-            trans_button_ko2zh = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
+    #         trans_button_ko2zh = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
 
-            result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)")
+    #         result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)")
 
-        trans_button_en2zh.click(do_trans_en2zh,[srt_path],outputs=[result2])
+    #     trans_button_en2zh.click(do_trans_en2zh,[srt_path],outputs=[result2])
 
-        trans_button_zh2en.click(do_trans_zh2en,[srt_path],outputs=[result2])
+    #     trans_button_zh2en.click(do_trans_zh2en,[srt_path],outputs=[result2])
 
-        trans_button_ja2zh.click(do_trans_ja2zh,[srt_path],outputs=[result2])
+    #     trans_button_ja2zh.click(do_trans_ja2zh,[srt_path],outputs=[result2])
 
-        trans_button_ko2zh.click(do_trans_ko2zh,[srt_path],outputs=[result2])
+    #     trans_button_ko2zh.click(do_trans_ko2zh,[srt_path],outputs=[result2])
 
     with gr.Accordion("Qwen2大模型字幕翻译"):
         with gr.Row():
 
 
-            srt_path_qwen2 = gr.Textbox(label="原始字幕地址，默认为项目目录中的video.srt,也可以输入其他路径",value="./video.srt")
+            srt_path_qwen2 = gr.Textbox(label="原始字幕地址，默认为项目目录中的output/video.srt,也可以输入其他路径",value="output/video.srt")
+
+            model_path_qwen2 = gr.Textbox(label="ollama中模型名称",value="qwen2:7b")
 
             trans_button_en2zh_qwen2 = gr.Button("翻译英语字幕为中文/Translate English subtitles into Chinese")
 
@@ -169,15 +194,19 @@ with gr.Blocks() as app:
 
             trans_button_ko2zh_qwen2 = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
 
-            result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)")
+            result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)",value=" ",interactive=True)
 
-        trans_button_en2zh_qwen2.click(do_trans_en2zh_qwen2,[srt_path_qwen2],outputs=[result2])
+            trans_button_ko2zh_qwen2_save = gr.Button("保存修改结果")
 
-        trans_button_zh2en_qwen2.click(do_trans_zh2en_qwen2,[srt_path_qwen2],outputs=[result2])
+        trans_button_en2zh_qwen2.click(do_trans_en2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
 
-        trans_button_ja2zh_qwen2.click(do_trans_ja2zh_qwen2,[srt_path_qwen2],outputs=[result2])
+        trans_button_zh2en_qwen2.click(do_trans_zh2en_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
 
-        trans_button_ko2zh_qwen2.click(do_trans_ko2zh_qwen2,[srt_path_qwen2],outputs=[result2])
+        trans_button_ja2zh_qwen2.click(do_trans_ja2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
+
+        trans_button_ko2zh_qwen2.click(do_trans_ko2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
+
+        trans_button_ko2zh_qwen2_save.click(save_two,[result2],outputs=[])
 
     with gr.Accordion("字幕合并"):
         with gr.Row():

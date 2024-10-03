@@ -71,7 +71,11 @@ or
 ```
 choco install ffmpeg
 ```
+## 下载 whisper-large-v3-turbo
 
+```
+python3 download_model.py
+```
 
 ## 基于 Ollama 的对话式大模型翻译
 
