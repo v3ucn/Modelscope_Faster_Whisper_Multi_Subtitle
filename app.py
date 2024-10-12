@@ -1,5 +1,9 @@
 import argparse
 import os
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ffmpeg_path = f"{ROOT_DIR}/bin" # 替换成你的 FFmpeg bin 目录
+# os.environ["PATH"] = os.environ.get("PATH", "") + os.pathsep + ffmpeg_path
 
 import gradio as gr
 
@@ -38,7 +42,7 @@ def do_trans_video_sv(video_path):
 
 def do_trans_audio(model_type):
 
-    srt_text = make_srt('audio.wav',model_type)
+    srt_text = make_srt(f'{ROOT_DIR}/audio.wav',model_type)
 
     return srt_text
 
@@ -76,16 +80,16 @@ def do_trans_ko2zh(srt_path):
 
 def do_srt_sin(video_path):
 
-    return merge_sub(video_path,"output/video.srt")
+    return merge_sub(video_path,f"{ROOT_DIR}/output/video.srt")
 
 def do_srt_two(video_path):
 
-    return merge_sub(video_path,"output/two.srt")
+    return merge_sub(video_path,f"{ROOT_DIR}/output/two.srt")
 
 
 def save_srt(text):
 
-    with open(r'output/video.srt','w',encoding='utf-8') as f:
+    with open(rf'{ROOT_DIR}/output/video.srt','w',encoding='utf-8') as f:
         f.write(text + "\n")
 
     gr.Info('字幕文件修改成功,字幕保存在output目录')
@@ -93,7 +97,7 @@ def save_srt(text):
 
 def save_two(text):
 
-    with open(r'output/two.srt','w',encoding='utf-8') as f:
+    with open(rf'{ROOT_DIR}/output/two.srt','w',encoding='utf-8') as f:
         f.write(text + "\n")
 
     gr.Info('字幕文件修改成功,字幕保存在output目录')
@@ -182,7 +186,7 @@ with gr.Blocks() as app:
         with gr.Row():
 
 
-            srt_path_qwen2 = gr.Textbox(label="原始字幕地址，默认为项目目录中的output/video.srt,也可以输入其他路径",value="output/video.srt")
+            srt_path_qwen2 = gr.Textbox(label="原始字幕地址，默认为项目目录中的output/video.srt,也可以输入其他路径",value=f"{ROOT_DIR}/output/video.srt")
 
             model_path_qwen2 = gr.Textbox(label="ollama中模型名称",value="qwen2:7b")
 

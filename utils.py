@@ -3,6 +3,8 @@ from modelscope.utils.constant import Tasks
 from moviepy.editor import VideoFileClip
 
 import os
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 import ffmpeg
 
@@ -31,9 +33,9 @@ local_dir_root = "./models_from_modelscope"
 # model_dir_ins = snapshot_download('damo/nlp_csanmt_translation_en2zh', cache_dir=local_dir_root)
 
 
-model_dir_cirm = './models_from_modelscope/damo/speech_frcrn_ans_cirm_16k'
+model_dir_cirm = f'{ROOT_DIR}/models_from_modelscope/damo/speech_frcrn_ans_cirm_16k'
 
-model_dir_ins = './models_from_modelscope/damo/nlp_csanmt_translation_en2zh'
+model_dir_ins = f'{ROOT_DIR}/models_from_modelscope/damo/nlp_csanmt_translation_en2zh'
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -290,8 +292,8 @@ def make_tran_qwen2(model_name,srt_path,lang):
 
     result = gweight_data.split("\n\n")
 
-    if os.path.exists("output/two.srt"):
-        os.remove("output/two.srt")
+    if os.path.exists(f"{ROOT_DIR}/output/two.srt"):
+        os.remove(f"{ROOT_DIR}/output/two.srt")
 
     for res in result:
 
@@ -327,9 +329,9 @@ def make_tran_qwen2(model_name,srt_path,lang):
              print(str(e))
              
         
-        with open("output/two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
+        with open(f"{ROOT_DIR}/output/two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
 
-    with open("output/two.srt","r",encoding="utf-8") as f:
+    with open(f"{ROOT_DIR}/output/two.srt","r",encoding="utf-8") as f:
         content = f.read()
 
     return content
@@ -662,6 +664,9 @@ def make_srt(file_path,model_name="small"):
         else:
             model = WhisperModel(model_name, device="cpu", compute_type="int8",download_root="./model_from_whisper",local_files_only=False)
     else:
+
+        model_name = f"{ROOT_DIR}/faster-whisper-large-v3-turbo-ct2"
+        print(model_name)
         
         if device == "cuda":
             try:
@@ -678,7 +683,7 @@ def make_srt(file_path,model_name="small"):
 
     print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
     count = 0
-    with open('output/video.srt', 'w',encoding="utf-8") as f:  # Open file for writing
+    with open(f'{ROOT_DIR}/output/video.srt', 'w',encoding="utf-8") as f:  # Open file for writing
         for segment in segments:
             count +=1
             duration = f"{convert_seconds_to_hms(segment.start)} --> {convert_seconds_to_hms(segment.end)}\n"
@@ -687,7 +692,7 @@ def make_srt(file_path,model_name="small"):
             f.write(f"{count}\n{duration}{text}")  # Write formatted string to the file
             print(f"{duration}{text}",end='')
 
-    with open("output/video.srt","r",encoding="utf-8") as f:
+    with open(f"{ROOT_DIR}/output/video.srt","r",encoding="utf-8") as f:
         content = f.read()
 
     return content
@@ -704,15 +709,15 @@ def movie2audio(video_path):
     audio = video.audio
 
     # 将声音保存为WAV格式
-    audio.write_audiofile("audio.wav")
+    audio.write_audiofile(f"{ROOT_DIR}/audio.wav")
 
     ans = pipeline_ali(
         Tasks.acoustic_noise_suppression,
         model=model_dir_cirm)
     
-    ans('audio.wav',output_path='output.wav')
+    ans(f'{ROOT_DIR}/audio.wav',output_path=f'{ROOT_DIR}/output.wav')
 
-    return "output.wav"
+    return f"{ROOT_DIR}/output.wav"
 
 
 
