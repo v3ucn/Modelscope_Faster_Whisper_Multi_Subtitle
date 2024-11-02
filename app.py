@@ -20,9 +20,9 @@ initial_md = """
 
 """
 
-def do_pyttsx3(srt,speed):
+def do_pyttsx3(srt,speed,voice):
 
-    generate_audio(path=srt,rate=int(speed),voice_idx=1)
+    generate_audio(path=srt,rate=int(speed),voice_idx=int(voice))
 
     return "output/pyttsx3.wav" 
 
@@ -290,12 +290,14 @@ with gr.Blocks() as app:
 
             speed_pyttsx3 = gr.Textbox(label="配音语速(很重要,否则会引起时间轴错乱的问题)",value="240")
 
+            voice_pyttsx3 = gr.Dropdown(["0","1"],value="1",info="0支持中文和英文,1只支持英文")
+
             button_pyttsx3 = gr.Button("生成配音")
 
             pyttsx3_audio = gr.Audio(label="配音的结果")
 
 
-    button_pyttsx3.click(do_pyttsx3,inputs=[srt_path_pyttsx3,speed_pyttsx3],outputs=[pyttsx3_audio])
+    button_pyttsx3.click(do_pyttsx3,inputs=[srt_path_pyttsx3,speed_pyttsx3,voice_pyttsx3],outputs=[pyttsx3_audio])
 
             
 
