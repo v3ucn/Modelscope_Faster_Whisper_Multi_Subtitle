@@ -9,7 +9,7 @@ import gradio as gr
 
 from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_tran_ja2zh,make_tran_ko2zh,make_srt_sv,make_tran_qwen2
 
-
+from subtitle_to_audio import generate_audio
 
 
 initial_md = """
@@ -20,6 +20,11 @@ initial_md = """
 
 """
 
+def do_pyttsx3(srt,speed):
+
+    generate_audio(path=srt,rate=int(speed),voice_idx=1)
+
+    return "output/pyttsx3.wav" 
 
 def do_speech(video):
 
@@ -87,6 +92,11 @@ def do_srt_two(video_path):
     return merge_sub(video_path,f"{ROOT_DIR}/output/two.srt")
 
 
+def do_srt_two_single(video_path):
+
+    return merge_sub(video_path,f"{ROOT_DIR}/output/two_single.srt")
+
+
 def save_srt(text):
 
     with open(rf'{ROOT_DIR}/output/video.srt','w',encoding='utf-8') as f:
@@ -95,10 +105,13 @@ def save_srt(text):
     gr.Info('字幕文件修改成功,字幕保存在output目录')
 
 
-def save_two(text):
+def save_two(text,text_2):
 
     with open(rf'{ROOT_DIR}/output/two.srt','w',encoding='utf-8') as f:
         f.write(text + "\n")
+
+    with open(rf'{ROOT_DIR}/output/two_single.srt','w',encoding='utf-8') as f:
+        f.write(text_2 + "\n")
 
     gr.Info('字幕文件修改成功,字幕保存在output目录')
     
@@ -198,19 +211,40 @@ with gr.Blocks() as app:
 
             trans_button_ko2zh_qwen2 = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
 
+        with gr.Row():
+
             result2 = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)",value=" ",interactive=True)
+
+            result3 = gr.Textbox(label="翻译结果(会在项目目录生成two_single.srt)",value=" ",interactive=True)
 
             trans_button_ko2zh_qwen2_save = gr.Button("保存修改结果")
 
-        trans_button_en2zh_qwen2.click(do_trans_en2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
+        trans_button_en2zh_qwen2.click(do_trans_en2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2,result3])
 
-        trans_button_zh2en_qwen2.click(do_trans_zh2en_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
+        trans_button_zh2en_qwen2.click(do_trans_zh2en_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2,result3])
 
-        trans_button_ja2zh_qwen2.click(do_trans_ja2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
+        trans_button_ja2zh_qwen2.click(do_trans_ja2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2,result3])
 
-        trans_button_ko2zh_qwen2.click(do_trans_ko2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2])
+        trans_button_ko2zh_qwen2.click(do_trans_ko2zh_qwen2,[model_path_qwen2,srt_path_qwen2],outputs=[result2,result3])
 
-        trans_button_ko2zh_qwen2_save.click(save_two,[result2],outputs=[])
+        trans_button_ko2zh_qwen2_save.click(save_two,[result2,result3],outputs=[])
+
+
+    with gr.Accordion("字幕配音(pyttsx3),只支持英文字幕"):
+        with gr.Row():
+
+            srt_path_pyttsx3 = gr.Textbox(label="字幕地址,也可以输入其他路径",value=f"{ROOT_DIR}/output/two_single.srt")
+
+            speed_pyttsx3 = gr.Textbox(label="配音语速(很重要,否则会引起时间轴错乱的问题)",value="240")
+
+            button_pyttsx3 = gr.Button("生成配音")
+
+            pyttsx3_audio = gr.Audio(label="配音的结果")
+
+
+    button_pyttsx3.click(do_pyttsx3,inputs=[srt_path_pyttsx3,speed_pyttsx3],outputs=[pyttsx3_audio])
+
+            
 
     with gr.Accordion("字幕合并"):
         with gr.Row():
@@ -220,10 +254,13 @@ with gr.Blocks() as app:
 
             srt_button_two = gr.Button("将双语字幕合并到视频/Merge bilingual subtitles into video")
 
+            srt_button_two_single = gr.Button("将翻译的单语字幕合并到视频")
+
             result3 = gr.Video(label="带字幕视频")
 
     srt_button_sin.click(do_srt_sin,inputs=[ori_video],outputs=[result3])
     srt_button_two.click(do_srt_two,inputs=[ori_video],outputs=[result3])
+    srt_button_two.click(do_srt_two_single,inputs=[ori_video],outputs=[result3])
 
 
     
