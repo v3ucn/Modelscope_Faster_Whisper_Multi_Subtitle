@@ -2,6 +2,8 @@ from modelscope.pipelines import pipeline as pipeline_ali
 from modelscope.utils.constant import Tasks
 from moviepy.editor import VideoFileClip
 
+import httpx, json
+
 import os
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -41,6 +43,22 @@ model_dir_ins = f'{ROOT_DIR}/models_from_modelscope/damo/nlp_csanmt_translation_
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 import ollama
+
+
+def deep_tran(text,_s,_t):
+
+    deeplx_api = "http://127.0.0.1:1188/translate"
+
+    data = {
+        "text": text,
+        "source_lang": _s,
+        "target_lang": _t
+    }
+
+    post_data = json.dumps(data)
+    r = httpx.post(url = deeplx_api, data = post_data).json()
+    print(r["data"])
+    return r["data"]
 
 # 合并字幕
 def merge_sub(video_path,srt_path):
@@ -283,7 +301,54 @@ def make_tran(srt_path):
     return content
 
 
+# 翻译字幕 deepl
+def make_tran_deep(srt_path,_s,_t):
 
+    
+
+    with open(srt_path, 'r',encoding="utf-8") as file:
+        gweight_data = file.read()
+
+    result = gweight_data.split("\n\n")
+
+
+    if os.path.exists(f"{ROOT_DIR}/output/two.srt"):
+        os.remove(f"{ROOT_DIR}/output/two.srt")
+
+    if os.path.exists(f"{ROOT_DIR}/output/two_single.srt"):
+        os.remove(f"{ROOT_DIR}/output/two_single.srt")
+
+    for res in result:
+
+        line_srt = res.split("\n")
+
+        try:
+            text = line_srt[2]
+            translated_text = deep_tran(text,_s,_t)
+
+
+            with open(f"{ROOT_DIR}/output/two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
+            with open(f"{ROOT_DIR}/output/two_single.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{translated_text}\n\n")
+
+
+        except IndexError as e:
+            print(str(e))
+            # 处理下标越界异常
+            print(f"翻译完毕")
+            break
+        except Exception as e:
+             print(str(e))
+             
+        
+        
+
+    with open(f"{ROOT_DIR}/output/two.srt","r",encoding="utf-8") as f:
+        content = f.read()
+
+    with open(f"{ROOT_DIR}/output/two_single.srt","r",encoding="utf-8") as f:
+        content_2 = f.read()
+
+    return content,content_2
 # 翻译字幕 英译中 qwen2
 def make_tran_qwen2(model_name,srt_path,lang):
 

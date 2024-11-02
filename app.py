@@ -7,7 +7,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 import gradio as gr
 
-from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_tran_ja2zh,make_tran_ko2zh,make_srt_sv,make_tran_qwen2
+from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_tran_ja2zh,make_tran_ko2zh,make_srt_sv,make_tran_qwen2,make_tran_deep
 
 from subtitle_to_audio import generate_audio
 
@@ -54,6 +54,26 @@ def do_trans_audio(model_type):
 def do_trans_en2zh(srt_path):
 
     return make_tran(srt_path)
+
+
+def do_trans_en2zh_deep(srt_path):
+
+    return make_tran_deep(srt_path,"EN","ZH")
+
+def do_trans_zh2en_deep(srt_path):
+
+    return make_tran_deep(srt_path,"ZH","EN")
+
+def do_trans_ja2zh_deep(srt_path):
+
+    return make_tran_deep(srt_path,"JA","ZH")
+
+def do_trans_ko2zh_deep(srt_path):
+
+    return make_tran_deep(srt_path,"KO","ZH")
+
+
+
 
 def do_trans_en2zh_qwen2(model_path_qwen2,srt_path):
 
@@ -230,7 +250,40 @@ with gr.Blocks() as app:
         trans_button_ko2zh_qwen2_save.click(save_two,[result2,result3],outputs=[])
 
 
-    with gr.Accordion("字幕配音(pyttsx3),只支持英文字幕"):
+    with gr.Accordion("Deepl字幕翻译"):
+        with gr.Row():
+
+
+            srt_path_deep = gr.Textbox(label="原始字幕地址，默认为项目目录中的output/video.srt,也可以输入其他路径",value=f"{ROOT_DIR}/output/video.srt")
+
+            trans_button_en2zh_deep = gr.Button("翻译英语字幕为中文/Translate English subtitles into Chinese")
+
+            trans_button_zh2en_deep = gr.Button("翻译中文字幕为英文/Translate Chinese subtitles into English")
+
+            trans_button_ja2zh_deep = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
+
+            trans_button_ko2zh_deep = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
+
+        with gr.Row():
+
+            result2_deep = gr.Textbox(label="翻译结果(会在项目目录生成two.srt/two.srt is generated in the current directory)",value=" ",interactive=True)
+
+            result3_deep = gr.Textbox(label="翻译结果(会在项目目录生成two_single.srt)",value=" ",interactive=True)
+
+            trans_button_ko2zh_deep_save = gr.Button("保存修改结果")
+
+        trans_button_en2zh_deep.click(do_trans_en2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
+
+        trans_button_zh2en_deep.click(do_trans_zh2en_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
+
+        trans_button_ja2zh_deep.click(do_trans_ja2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
+
+        trans_button_ko2zh_deep.click(do_trans_ko2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
+
+        trans_button_ko2zh_deep_save.click(save_two,[result2_deep,result3_deep],outputs=[])
+
+
+    with gr.Accordion("字幕配音(pyttsx3)"):
         with gr.Row():
 
             srt_path_pyttsx3 = gr.Textbox(label="字幕地址,也可以输入其他路径",value=f"{ROOT_DIR}/output/two_single.srt")
