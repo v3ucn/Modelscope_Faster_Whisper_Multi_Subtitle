@@ -10,6 +10,16 @@ import gradio as gr
 from utils import movie2audio,make_srt,make_tran,merge_sub,make_tran_zh2en,make_tran_ja2zh,make_tran_ko2zh,make_srt_sv,make_tran_qwen2,make_tran_deep
 
 from subtitle_to_audio import generate_audio
+import pyttsx3
+
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')       # getting details of current voice
+vlist = []
+num = 0
+for voice in voices:
+    print(" - Name: %s" % voice.name)
+    vlist.append((voice.name,num))
+    num += 1
 
 
 initial_md = """
@@ -21,6 +31,8 @@ initial_md = """
 """
 
 def do_pyttsx3(srt,speed,voice):
+
+    print(voice)
 
     generate_audio(path=srt,rate=int(speed),voice_idx=int(voice))
 
@@ -63,6 +75,10 @@ def do_trans_en2zh_deep(srt_path):
 def do_trans_zh2en_deep(srt_path):
 
     return make_tran_deep(srt_path,"ZH","EN")
+
+def do_trans_zh2ja_deep(srt_path):
+
+    return make_tran_deep(srt_path,"ZH","JA")
 
 def do_trans_ja2zh_deep(srt_path):
 
@@ -260,6 +276,8 @@ with gr.Blocks() as app:
 
             trans_button_zh2en_deep = gr.Button("翻译中文字幕为英文/Translate Chinese subtitles into English")
 
+            trans_button_zh2ja_deep = gr.Button("翻译中文字幕为日文/Translate Chinese subtitles into Japanese")
+
             trans_button_ja2zh_deep = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
 
             trans_button_ko2zh_deep = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
@@ -273,6 +291,8 @@ with gr.Blocks() as app:
             trans_button_ko2zh_deep_save = gr.Button("保存修改结果")
 
         trans_button_en2zh_deep.click(do_trans_en2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
+
+        trans_button_zh2ja_deep.click(do_trans_zh2ja_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
 
         trans_button_zh2en_deep.click(do_trans_zh2en_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
 
@@ -290,7 +310,7 @@ with gr.Blocks() as app:
 
             speed_pyttsx3 = gr.Textbox(label="配音语速(很重要,否则会引起时间轴错乱的问题)",value="240")
 
-            voice_pyttsx3 = gr.Dropdown(["0","1"],value="1",info="0支持中文和英文,1只支持英文")
+            voice_pyttsx3 = gr.Dropdown(choices=vlist,value=3,label="配音的音色选择",interactive=True)
 
             button_pyttsx3 = gr.Button("生成配音")
 
