@@ -32,11 +32,11 @@ initial_md = """
 
 def do_pyttsx3(srt,speed,voice):
 
-    print(voice)
+    voice = int(voice)
 
-    generate_audio(path=srt,rate=int(speed),voice_idx=int(voice))
+    generate_audio(path=srt,rate=int(speed),voice_idx=voice)
 
-    return "output/pyttsx3.wav" 
+    return f"output/{vlist[voice][0]}.wav" 
 
 def do_speech(video):
 
@@ -79,6 +79,10 @@ def do_trans_zh2en_deep(srt_path):
 def do_trans_zh2ja_deep(srt_path):
 
     return make_tran_deep(srt_path,"ZH","JA")
+
+def do_trans_zh2ko_deep(srt_path):
+
+    return make_tran_deep(srt_path,"ZH","KO")
 
 def do_trans_ja2zh_deep(srt_path):
 
@@ -278,6 +282,8 @@ with gr.Blocks() as app:
 
             trans_button_zh2ja_deep = gr.Button("翻译中文字幕为日文/Translate Chinese subtitles into Japanese")
 
+            trans_button_zh2ko_deep = gr.Button("翻译中文字幕为韩文/Translate Chinese subtitles into Korea")
+
             trans_button_ja2zh_deep = gr.Button("翻译日文字幕为中文/Translate Japanese subtitles into Chinese")
 
             trans_button_ko2zh_deep = gr.Button("翻译韩文字幕为中文/Translate Korea subtitles into Chinese")
@@ -290,15 +296,7 @@ with gr.Blocks() as app:
 
             trans_button_ko2zh_deep_save = gr.Button("保存修改结果")
 
-        trans_button_en2zh_deep.click(do_trans_en2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
-
-        trans_button_zh2ja_deep.click(do_trans_zh2ja_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
-
-        trans_button_zh2en_deep.click(do_trans_zh2en_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
-
-        trans_button_ja2zh_deep.click(do_trans_ja2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
-
-        trans_button_ko2zh_deep.click(do_trans_ko2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep])
+        
 
         trans_button_ko2zh_deep_save.click(save_two,[result2_deep,result3_deep],outputs=[])
 
@@ -306,7 +304,7 @@ with gr.Blocks() as app:
     with gr.Accordion("字幕配音(pyttsx3)"):
         with gr.Row():
 
-            srt_path_pyttsx3 = gr.Textbox(label="字幕地址,也可以输入其他路径",value=f"{ROOT_DIR}/output/two_single.srt")
+            srt_path_pyttsx3 = gr.Textbox(label="字幕地址,也可以输入其他路径",value=f"{ROOT_DIR}/output/two_single.srt",interactive=True)
 
             speed_pyttsx3 = gr.Textbox(label="配音语速(很重要,否则会引起时间轴错乱的问题)",value="240")
 
@@ -315,6 +313,19 @@ with gr.Blocks() as app:
             button_pyttsx3 = gr.Button("生成配音")
 
             pyttsx3_audio = gr.Audio(label="配音的结果")
+
+
+    trans_button_en2zh_deep.click(do_trans_en2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep,srt_path_pyttsx3])
+
+    trans_button_zh2ja_deep.click(do_trans_zh2ja_deep,[srt_path_deep],outputs=[result2_deep,result3_deep,srt_path_pyttsx3])
+
+    trans_button_zh2en_deep.click(do_trans_zh2en_deep,[srt_path_deep],outputs=[result2_deep,result3_deep,srt_path_pyttsx3])
+
+    trans_button_zh2ko_deep.click(do_trans_zh2ko_deep,[srt_path_deep],outputs=[result2_deep,result3_deep,srt_path_pyttsx3])
+
+    trans_button_ja2zh_deep.click(do_trans_ja2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep,srt_path_pyttsx3])
+
+    trans_button_ko2zh_deep.click(do_trans_ko2zh_deep,[srt_path_deep],outputs=[result2_deep,result3_deep,srt_path_pyttsx3])
 
 
     button_pyttsx3.click(do_pyttsx3,inputs=[srt_path_pyttsx3,speed_pyttsx3,voice_pyttsx3],outputs=[pyttsx3_audio])

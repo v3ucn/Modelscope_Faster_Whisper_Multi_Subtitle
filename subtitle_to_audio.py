@@ -5,6 +5,13 @@ from pysubparser import parser
 from pydub import AudioSegment
 import pyttsx3
 
+
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')       # getting details of current voice
+vlist = []
+for voice in voices:
+    vlist.append(voice.name)
+
 def time_to_ms(time):
   return ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.microsecond / 1000
 
@@ -43,7 +50,7 @@ def generate_audio(path, rate=200, voice_idx=0):
       prev_subtitle = subtitle
       prev_audio_duration_ms = len(audio_segment)
 
-    with open('output/pyttsx3.wav', 'wb') as out_f:
+    with open(f'output/{vlist[voice_idx]}.wav', 'wb') as out_f:
       audio_sum.export(out_f, format='wav')      
 
 if __name__ == "__main__":      

@@ -315,8 +315,8 @@ def make_tran_deep(srt_path,_s,_t):
     if os.path.exists(f"{ROOT_DIR}/output/two.srt"):
         os.remove(f"{ROOT_DIR}/output/two.srt")
 
-    if os.path.exists(f"{ROOT_DIR}/output/two_single.srt"):
-        os.remove(f"{ROOT_DIR}/output/two_single.srt")
+    if os.path.exists(f"{ROOT_DIR}/output/t_sin_{_t}.srt"):
+        os.remove(f"{ROOT_DIR}/output/t_sin_{_t}.srt")
 
     for res in result:
 
@@ -328,7 +328,7 @@ def make_tran_deep(srt_path,_s,_t):
 
 
             with open(f"{ROOT_DIR}/output/two.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{line_srt[2]}\n{translated_text}\n\n")
-            with open(f"{ROOT_DIR}/output/two_single.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{translated_text}\n\n")
+            with open(f"{ROOT_DIR}/output/t_sin_{_t}.srt","a",encoding="utf-8")as f:f.write(f"{line_srt[0]}\n{line_srt[1]}\n{translated_text}\n\n")
 
 
         except IndexError as e:
@@ -345,10 +345,10 @@ def make_tran_deep(srt_path,_s,_t):
     with open(f"{ROOT_DIR}/output/two.srt","r",encoding="utf-8") as f:
         content = f.read()
 
-    with open(f"{ROOT_DIR}/output/two_single.srt","r",encoding="utf-8") as f:
+    with open(f"{ROOT_DIR}/output/t_sin_{_t}.srt","r",encoding="utf-8") as f:
         content_2 = f.read()
 
-    return content,content_2
+    return content,content_2,f"{ROOT_DIR}/output/t_sin_{_t}.srt"
 # 翻译字幕 英译中 qwen2
 def make_tran_qwen2(model_name,srt_path,lang):
 
