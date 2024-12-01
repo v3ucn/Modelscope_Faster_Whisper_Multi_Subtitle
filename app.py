@@ -32,6 +32,8 @@ initial_md = """
 
 def do_pyttsx3(srt,speed,voice):
 
+    print(srt,speed,voice)
+
     voice = int(voice)
 
     generate_audio(path=srt,rate=int(speed),voice_idx=voice)
@@ -304,7 +306,7 @@ with gr.Blocks() as app:
     with gr.Accordion("字幕配音(pyttsx3)"):
         with gr.Row():
 
-            srt_path_pyttsx3 = gr.Textbox(label="字幕地址,也可以输入其他路径",value=f"{ROOT_DIR}/output/two_single.srt",interactive=True)
+            srt_path_pyttsx3 = gr.Textbox(label="字幕地址,也可以输入其他路径",value=f"{ROOT_DIR}/output/eng.srt",interactive=True)
 
             speed_pyttsx3 = gr.Textbox(label="配音语速(很重要,否则会引起时间轴错乱的问题)",value="240")
 
